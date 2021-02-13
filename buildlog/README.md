@@ -17,4 +17,4 @@ Vi møttest hjå Dag. Erik brukte dagen på å jobbe med sitt digitale sjakkbret
 ![](./img/d1/IMG_0144_small.jpeg)
 ![](./img/d1/IMG_0145_small.jpeg)
 ![](./img/d1/IMG_0146_small.jpeg)
-![](./img/d1/IMG_0149_small.gif )
+![](./img/d1/IMG_0149.gif )
