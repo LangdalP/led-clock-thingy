@@ -13,6 +13,8 @@
  * 4: Profit!
  */
 
+#include "gfxutils.cxx"
+
 #include "libs/rpi-rgb-led-matrix/include/led-matrix.h"
 #include "libs/rpi-rgb-led-matrix/include/graphics.h"
 
@@ -34,9 +36,8 @@ static void InterruptHandler(int signo)
 
 static void DrawStuff(rgb_matrix::RGBMatrix *matrix, rgb_matrix::FrameCanvas *offscreen)
 {
-  int width = matrix->width();
-  int height = matrix->height();
-  rgb_matrix::Color border_color(255, 90, 95); // Sizzling Red
+  rgb_matrix::Color border_color(214, 39, 39); // Pretty Red
+  rgb_matrix::Color border_color2(36, 116, 201); // Pretty Blue
 
   // rgb_matrix::Color text_color(255, 128, 0); // Orange
   // rgb_matrix::Color text_color(255, 0, 119); // Pink
@@ -69,10 +70,8 @@ static void DrawStuff(rgb_matrix::RGBMatrix *matrix, rgb_matrix::FrameCanvas *of
                          letter_spacing);
 
     // Draw border
-    rgb_matrix::DrawLine(offscreen, 0, 0, width - 1, 0, border_color);
-    rgb_matrix::DrawLine(offscreen, 0, 0, 0, height - 1, border_color);
-    rgb_matrix::DrawLine(offscreen, 0, height - 1, width - 1, height - 1, border_color);
-    rgb_matrix::DrawLine(offscreen, width - 1, 0, width - 1, height - 1, border_color);
+    DrawBorder(offscreen, border_color, 0);
+    DrawBorder(offscreen, border_color2, 1);
 
     offscreen = matrix->SwapOnVSync(offscreen);
     // TODO: Consider improving wait logic
