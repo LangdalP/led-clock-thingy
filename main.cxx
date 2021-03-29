@@ -27,7 +27,7 @@ using rgb_matrix::Canvas;
 using rgb_matrix::RGBMatrix;
 using rgb_matrix::Color;
 
-const int TEXT_X = 10;
+const int TEXT_X = 2;
 const int TEXT_Y = 10;
 
 volatile bool interrupt_received = false;
@@ -51,7 +51,7 @@ static void DrawStuff(Canvas *canvas)
     return;
   }
 
-  time_t time_since_epoch = time(NULL);
+  time_t time_since_epoch;
   struct tm time_parts;
 
   char text_buffer[64];
@@ -59,14 +59,15 @@ static void DrawStuff(Canvas *canvas)
 
   while (!interrupt_received)
   {
+    time_since_epoch = time(NULL);
     localtime_r(&time_since_epoch, &time_parts);
     strftime(text_buffer, sizeof(text_buffer), "%H:%M:%S", &time_parts);
     rgb_matrix::DrawText(canvas, font,
                          TEXT_X, TEXT_Y + font.baseline(),
                          text_color, NULL, text_buffer,
                          letter_spacing);
+    usleep(200 * 1000);
   }
-  usleep(500 * 1000);
 }
 
 int main(int argc, char *argv[])

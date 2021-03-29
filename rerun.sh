@@ -1,4 +1,4 @@
 #! /usr/bin/env bash
 
 make
-sudo $PWD/hello
+sudo $PWD/clockthingy
