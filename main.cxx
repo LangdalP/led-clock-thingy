@@ -25,8 +25,8 @@
 #include <stdio.h>
 #include <signal.h>
 
-const int TEXT_X = 2;
-const int TEXT_Y = 2;
+const int TEXT_X = 4;
+const int TEXT_Y = 8;
 
 volatile bool interrupt_received = false;
 static void InterruptHandler(int signo)
