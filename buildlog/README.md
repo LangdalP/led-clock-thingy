@@ -18,3 +18,19 @@ Vi møttest hjå Dag. Erik brukte dagen på å jobbe med sitt digitale sjakkbret
 ![](./img/d1/IMG_0145_small.jpeg)
 ![](./img/d1/IMG_0146_small.jpeg)
 ![](./img/d1/IMG_0149.gif )
+
+## Dag 2
+
+Heile faggruppa møttest på kontoret. Eg tok diverre ingen bilder denne dagen, men det var nok sikkert like greit, for det var ikkje så mykje å ta bilde av. I hovudsak jobba eg med å sette opp koden + raspberryen slik at kunne styre skjermen frå eiga kode. Tidlegare hadde eg altså berre spelt av ting på skjermen ved å bruke ferdiglagde program i [rpi-rgb-led-matrix](https://github.com/hzeller/rpi-rgb-led-matrix), så det var ganske gøy å kunne teikne akkurat det eg sjølv ville.
+
+## Dag 3
+
+Første mandag i påskeferien blei eg fysen på litt LED-matrisefikling:
+
+- Druste inn funksjonalitet for å vise klokkeslett på matrisa
+- Knalla inn støtte for dobbelbufring, altså at eg teiknar det eg vil vise inn eit skjult buffer, som ein så byttar med det aktive grafikkbufferet. Dette hindrar rifter i det som blir teikna, som kan oppstå dersom ein muterer bufferet medan det held på å bli teikna til skjermen.
+- Rydda litt opp i koden slik at den blei kjekkare å jobbe med
+
+![](./img/d3/80040669-26D5-447F-8A45-7E5AB31A4328_1_105_c_small.jpeg)
+![](./img/d3/8FE1623A-ED83-4B91-9050-69778AEF4DDE_1_105_c_small.jpeg)
+![](./img/d3/0DA73599-4924-4F6D-93E0-A25377DF4770_1_105_c_small.jpeg)
