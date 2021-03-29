@@ -23,10 +23,6 @@
 #include <stdio.h>
 #include <signal.h>
 
-using rgb_matrix::Canvas;
-using rgb_matrix::RGBMatrix;
-using rgb_matrix::Color;
-
 const int TEXT_X = 2;
 const int TEXT_Y = 10;
 
@@ -36,12 +32,12 @@ static void InterruptHandler(int signo)
   interrupt_received = true;
 }
 
-static void DrawStuff(Canvas *canvas)
+static void DrawStuff(rgb_matrix::RGBMatrix *matrix, rgb_matrix::FrameCanvas *offscreen)
 {
   // TODO:
   // - Consider an "offscreen" buffer
 
-  Color text_color(255, 128, 0);
+  rgb_matrix::Color text_color(255, 128, 0);
   int letter_spacing = 0;
 
   rgb_matrix::Font font;
@@ -55,41 +51,49 @@ static void DrawStuff(Canvas *canvas)
   struct tm time_parts;
 
   char text_buffer[64];
-  canvas->Clear();
+  matrix->Clear();
 
   while (!interrupt_received)
   {
+    // This might give a flash that would be fixed with offscreen buffer
+    offscreen->Clear();
     time_since_epoch = time(NULL);
     localtime_r(&time_since_epoch, &time_parts);
     strftime(text_buffer, sizeof(text_buffer), "%H:%M:%S", &time_parts);
-    rgb_matrix::DrawText(canvas, font,
+    rgb_matrix::DrawText(offscreen, font,
                          TEXT_X, TEXT_Y + font.baseline(),
                          text_color, NULL, text_buffer,
                          letter_spacing);
+
+    offscreen = matrix->SwapOnVSync(offscreen);
+    // TODO: Consider improving wait logic
     usleep(200 * 1000);
   }
 }
 
 int main(int argc, char *argv[])
 {
-  RGBMatrix::Options defaults;
+  rgb_matrix::RGBMatrix::Options defaults;
   defaults.hardware_mapping = "regular"; // or e.g. "adafruit-hat"
   defaults.rows = 32;
   defaults.cols = 64;
   defaults.chain_length = 1;
   defaults.parallel = 1;
   defaults.show_refresh_rate = true;
-  Canvas *canvas = RGBMatrix::CreateFromFlags(&argc, &argv, &defaults);
-  if (canvas == NULL)
+  rgb_matrix::RGBMatrix *matrix = rgb_matrix::RGBMatrix::CreateFromFlags(&argc, &argv, &defaults);
+  rgb_matrix::FrameCanvas *offscreen = matrix->CreateFrameCanvas();
+  if (matrix == NULL || offscreen == NULL) {
+    std::cerr << "Failed to init matrix or offscreen. Aborting." << std::endl;
     return 1;
+  }
 
   signal(SIGTERM, InterruptHandler);
   signal(SIGINT, InterruptHandler);
 
-  DrawStuff(canvas);
+  DrawStuff(matrix, offscreen);
 
-  canvas->Clear();
-  delete canvas;
+  matrix->Clear();
+  delete matrix;
 
   return 0;
 }
