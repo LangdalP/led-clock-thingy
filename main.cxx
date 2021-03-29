@@ -51,7 +51,6 @@ static void DrawStuff(Canvas *canvas)
     return;
   }
 
-  struct timespec next_time;
   time_t time_since_epoch = time(NULL);
   struct tm time_parts;
 

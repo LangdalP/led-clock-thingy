@@ -13,7 +13,7 @@ clockthingy: clockthingy.o $(RGB_LIBRARY)
 	$(CC) $(CFLAGS) clockthingy.o -o clockthingy $(LDFLAGS)
 
 clockthingy.o: main.cxx
-	$(CC) $(CFLAGS) -c main.cxx
+	$(CC) $(CFLAGS) -c main.cxx -o clockthingy.o
 
  $(RGB_LIBRARY):
 	$(MAKE) -C $(RGB_LIBDIR)
