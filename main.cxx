@@ -24,7 +24,7 @@
 #include <signal.h>
 
 const int TEXT_X = 2;
-const int TEXT_Y = 10;
+const int TEXT_Y = 2;
 
 volatile bool interrupt_received = false;
 static void InterruptHandler(int signo)
@@ -34,14 +34,17 @@ static void InterruptHandler(int signo)
 
 static void DrawStuff(rgb_matrix::RGBMatrix *matrix, rgb_matrix::FrameCanvas *offscreen)
 {
-  // TODO:
-  // - Consider an "offscreen" buffer
+  int width = matrix->width();
+  int height = matrix->height();
+  rgb_matrix::Color border_color(255, 90, 95); // Sizzling Red
 
-  rgb_matrix::Color text_color(255, 128, 0);
+  // rgb_matrix::Color text_color(255, 128, 0); // Orange
+  // rgb_matrix::Color text_color(255, 0, 119); // Pink
+  rgb_matrix::Color text_color(0, 255, 179); // Turqoise
   int letter_spacing = 0;
 
   rgb_matrix::Font font;
-  if (!font.LoadFont("libs/rpi-rgb-led-matrix/fonts/8x13.bdf"))
+  if (!font.LoadFont("libs/rpi-rgb-led-matrix/fonts/7x13.bdf"))
   {
     std::cerr << "Couldn't load font" << std::endl;
     return;
@@ -55,7 +58,7 @@ static void DrawStuff(rgb_matrix::RGBMatrix *matrix, rgb_matrix::FrameCanvas *of
 
   while (!interrupt_received)
   {
-    // This might give a flash that would be fixed with offscreen buffer
+    // Draw time text
     offscreen->Clear();
     time_since_epoch = time(NULL);
     localtime_r(&time_since_epoch, &time_parts);
@@ -65,9 +68,15 @@ static void DrawStuff(rgb_matrix::RGBMatrix *matrix, rgb_matrix::FrameCanvas *of
                          text_color, NULL, text_buffer,
                          letter_spacing);
 
+    // Draw border
+    rgb_matrix::DrawLine(offscreen, 0, 0, width - 1, 0, border_color);
+    rgb_matrix::DrawLine(offscreen, 0, 0, 0, height - 1, border_color);
+    rgb_matrix::DrawLine(offscreen, 0, height - 1, width - 1, height - 1, border_color);
+    rgb_matrix::DrawLine(offscreen, width - 1, 0, width - 1, height - 1, border_color);
+
     offscreen = matrix->SwapOnVSync(offscreen);
     // TODO: Consider improving wait logic
-    usleep(200 * 1000);
+    usleep(1000 * 1000);
   }
 }
 
