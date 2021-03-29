@@ -9,11 +9,11 @@ RGB_LIBRARY_NAME=rgbmatrix
 RGB_LIBRARY=$(RGB_LIBDIR)/lib$(RGB_LIBRARY_NAME).a
 LDFLAGS+=-L$(RGB_LIBDIR) -l$(RGB_LIBRARY_NAME) -lrt -lm -lpthread
 
-hello: hello.o $(RGB_LIBRARY)
-	$(CC) $(CFLAGS) hello.o -o hello $(LDFLAGS)
+clockthingy: clockthingy.o $(RGB_LIBRARY)
+	$(CC) $(CFLAGS) clockthingy.o -o clockthingy $(LDFLAGS)
 
-hello.o: hello.cxx
-	$(CC) $(CFLAGS) -c hello.cxx
+clockthingy.o: main.cxx
+	$(CC) $(CFLAGS) -c main.cxx
 
  $(RGB_LIBRARY):
 	$(MAKE) -C $(RGB_LIBDIR)
