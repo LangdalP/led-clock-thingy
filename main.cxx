@@ -29,12 +29,27 @@ const int TEXT_X = 4;
 const int TEXT_Y = 8;
 
 volatile bool interrupt_received = false;
-static void InterruptHandler(int signo)
+volatile bool next_received = false;
+
+enum Scene : short { Clock, Other, NUM_SCENE_ITEMS };
+short currentScene = Clock;
+
+
+static void QuitHandler(int signo)
 {
   interrupt_received = true;
 }
 
-static void DrawStuff(rgb_matrix::RGBMatrix *matrix, rgb_matrix::FrameCanvas *offscreen)
+static void NextHandler(int signo)
+{
+  next_received = true;
+}
+
+static void SetNext() {
+  currentScene = (currentScene + 1) % NUM_SCENE_ITEMS;
+}
+
+static void DrawClock(rgb_matrix::RGBMatrix *matrix, rgb_matrix::FrameCanvas *offscreen)
 {
   rgb_matrix::Color border_color(214, 39, 39); // Pretty Red
   rgb_matrix::Color border_color2(36, 116, 201); // Pretty Blue
@@ -59,6 +74,10 @@ static void DrawStuff(rgb_matrix::RGBMatrix *matrix, rgb_matrix::FrameCanvas *of
 
   while (!interrupt_received)
   {
+    if (next_received) {
+      SetNext();
+      return;
+    }
     // Draw time text
     offscreen->Clear();
     time_since_epoch = time(NULL);
@@ -80,6 +99,38 @@ static void DrawStuff(rgb_matrix::RGBMatrix *matrix, rgb_matrix::FrameCanvas *of
   }
 }
 
+static void DrawOther(rgb_matrix::RGBMatrix *matrix, rgb_matrix::FrameCanvas *offscreen)
+{
+  rgb_matrix::Color text_color(0, 255, 179); // Turqoise
+  int letter_spacing = 0;
+
+  rgb_matrix::Font font;
+  if (!font.LoadFont("libs/rpi-rgb-led-matrix/fonts/7x13.bdf"))
+  {
+    std::cerr << "Couldn't load font" << std::endl;
+    return;
+  }
+
+  char text_buffer[64] = "Hei!";
+  matrix->Clear();
+
+  while (!interrupt_received)
+  {
+    if (next_received) {
+      SetNext();
+      return;
+    }
+    offscreen->Clear();
+    rgb_matrix::DrawText(offscreen, font,
+                         TEXT_X, TEXT_Y + font.baseline(),
+                         text_color, NULL, text_buffer,
+                         letter_spacing);
+
+    offscreen = matrix->SwapOnVSync(offscreen);
+    usleep(100 * 1000);
+  }
+}
+
 int main(int argc, char *argv[])
 {
   rgb_matrix::RGBMatrix::Options defaults;
@@ -96,10 +147,26 @@ int main(int argc, char *argv[])
     return 1;
   }
 
-  signal(SIGTERM, InterruptHandler);
-  signal(SIGINT, InterruptHandler);
+  signal(SIGTERM, QuitHandler);
+  signal(SIGQUIT, QuitHandler);  // Ctrl+D
+  signal(SIGINT, NextHandler);   // Ctrl+C
 
-  DrawStuff(matrix, offscreen);
+
+  while(true) {
+    switch (currentScene)
+    {
+    case Clock:
+      DrawClock(matrix, offscreen);
+      break;
+    case Other:
+      DrawOther(matrix, offscreen);
+      break;
+    default:
+      break;
+    }
+  }
+
+  DrawClock(matrix, offscreen);
 
   matrix->Clear();
   delete matrix;
