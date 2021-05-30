@@ -75,7 +75,8 @@ static void DrawStuff(rgb_matrix::RGBMatrix *matrix, rgb_matrix::FrameCanvas *of
 
     offscreen = matrix->SwapOnVSync(offscreen);
     // TODO: Consider improving wait logic
-    usleep(1000 * 1000);
+    // Advantage of sleeping for 1 second: Always ~one second between changes from one second to the next.
+    usleep(100 * 1000);
   }
 }
 
