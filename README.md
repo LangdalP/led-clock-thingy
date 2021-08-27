@@ -8,4 +8,8 @@ I am using [rpi-rgb-led-matrix](https://github.com/hzeller/rpi-rgb-led-matrix) t
 - [Adafruit LED Matrix](https://www.adafruit.com/product/2279)
 - TODO: Rest of this list
 
-
+## TODO
+- Flette saman master og wip branch
+- Lag sprites for vêr-ikon for å integrere mot yr
+- Integrere mot yr. Har api query i Insomnia
+- Teikne opp fysisk kabinett
