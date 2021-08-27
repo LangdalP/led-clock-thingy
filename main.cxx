@@ -25,8 +25,8 @@
 #include <stdio.h>
 #include <signal.h>
 
-const int TEXT_X = 4;
-const int TEXT_Y = 8;
+const int TEXT_X = 3;
+const int TEXT_Y = 2;
 
 volatile bool interrupt_received = false;
 volatile bool next_received = false;
@@ -47,8 +47,11 @@ static void NextHandler(int signo)
 
 static void SetNext() {
   currentScene = (currentScene + 1) % NUM_SCENE_ITEMS;
+  next_received = false;
 }
 
+#include "clock.cxx"
+/*
 static void DrawClock(rgb_matrix::RGBMatrix *matrix, rgb_matrix::FrameCanvas *offscreen)
 {
   rgb_matrix::Color border_color(214, 39, 39); // Pretty Red
@@ -98,6 +101,7 @@ static void DrawClock(rgb_matrix::RGBMatrix *matrix, rgb_matrix::FrameCanvas *of
     usleep(100 * 1000);
   }
 }
+*/
 
 static void DrawOther(rgb_matrix::RGBMatrix *matrix, rgb_matrix::FrameCanvas *offscreen)
 {
@@ -147,16 +151,18 @@ int main(int argc, char *argv[])
     return 1;
   }
 
+/*
   signal(SIGTERM, QuitHandler);
   signal(SIGQUIT, QuitHandler);  // Ctrl+D
   signal(SIGINT, NextHandler);   // Ctrl+C
+  */
 
 
   while(true) {
     switch (currentScene)
     {
     case Clock:
-      DrawClock(matrix, offscreen);
+      DrawClockScreen(matrix, offscreen);
       break;
     case Other:
       DrawOther(matrix, offscreen);
@@ -166,9 +172,6 @@ int main(int argc, char *argv[])
     }
   }
 
-  DrawClock(matrix, offscreen);
-
-  matrix->Clear();
   delete matrix;
 
   return 0;
