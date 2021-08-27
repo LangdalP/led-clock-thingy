@@ -5,7 +5,7 @@
 // This code is public domain
 // (but note, that the led-matrix library this depends on is GPL v2)
 
-/*
+    /*
  * TODO:
  * 1: Finn kode for å vise klokke
  * 2: Gjer noko anna kult
@@ -23,116 +23,60 @@
 #include <unistd.h>
 #include <math.h>
 #include <stdio.h>
-#include <signal.h>
 
-const int TEXT_X = 4;
-const int TEXT_Y = 8;
+const int TEXT_X = 3;
+const int TEXT_Y = 2;
 
-volatile bool interrupt_received = false;
-volatile bool next_received = false;
+const int letter_spacing = 0;
 
-enum Scene : short { Clock, Other, NUM_SCENE_ITEMS };
-short currentScene = Clock;
+const rgb_matrix::Color border_color(102, 58, 0);
+const rgb_matrix::Color border_color2(0, 36, 43);
+const rgb_matrix::Color progress_color(0, 36, 43);
+const rgb_matrix::Color text_color(102, 58, 0);
 
-
-static void QuitHandler(int signo)
-{
-  interrupt_received = true;
-}
-
-static void NextHandler(int signo)
-{
-  next_received = true;
-}
-
-static void SetNext() {
-  currentScene = (currentScene + 1) % NUM_SCENE_ITEMS;
-}
-
-static void DrawClock(rgb_matrix::RGBMatrix *matrix, rgb_matrix::FrameCanvas *offscreen)
-{
-  rgb_matrix::Color border_color(214, 39, 39); // Pretty Red
-  rgb_matrix::Color border_color2(36, 116, 201); // Pretty Blue
-
-  // rgb_matrix::Color text_color(255, 128, 0); // Orange
-  // rgb_matrix::Color text_color(255, 0, 119); // Pink
-  rgb_matrix::Color text_color(0, 255, 179); // Turqoise
-  int letter_spacing = 0;
-
-  rgb_matrix::Font font;
-  if (!font.LoadFont("libs/rpi-rgb-led-matrix/fonts/7x13.bdf"))
-  {
-    std::cerr << "Couldn't load font" << std::endl;
-    return;
-  }
-
+typedef struct DrawClockDependencies {
   time_t time_since_epoch;
   struct tm time_parts;
+  char* text_buffer;
+} DrawClockDependencies;
 
-  char text_buffer[64];
-  matrix->Clear();
+static void DrawClockScreen(rgb_matrix::RGBMatrix *matrix, rgb_matrix::FrameCanvas *offscreen, DrawClockDependencies& deps, rgb_matrix::Font& font)
+{
+  // Draw time text
+  offscreen->Clear();
+  deps.time_since_epoch = time(NULL);
+  localtime_r(&(deps.time_since_epoch), &(deps.time_parts));
+  strftime(deps.text_buffer, 64, "%H:%M", &(deps.time_parts));
+  rgb_matrix::DrawText(offscreen, font,
+                        TEXT_X, TEXT_Y + font.baseline(),
+                        text_color, NULL, deps.text_buffer,
+                        letter_spacing);
 
-  while (!interrupt_received)
-  {
-    if (next_received) {
-      SetNext();
-      return;
-    }
-    // Draw time text
-    offscreen->Clear();
-    time_since_epoch = time(NULL);
-    localtime_r(&time_since_epoch, &time_parts);
-    strftime(text_buffer, sizeof(text_buffer), "%H:%M:%S", &time_parts);
-    rgb_matrix::DrawText(offscreen, font,
-                         TEXT_X, TEXT_Y + font.baseline(),
-                         text_color, NULL, text_buffer,
-                         letter_spacing);
+  // Draw border
+  DrawBorder(offscreen, border_color, 33, 14, 1, 1);
 
-    // Draw border
-    DrawBorder(offscreen, border_color, 0);
-    DrawBorder(offscreen, border_color2, 1);
+  float progress_fraction = (float)deps.time_parts.tm_sec / 60.0f;
+  int progress_width = (int) (29.0f * progress_fraction);
+  // std::cout << progress_width << std::endl;
 
-    offscreen = matrix->SwapOnVSync(offscreen);
-    // TODO: Consider improving wait logic
-    // Advantage of sleeping for 1 second: Always ~one second between changes from one second to the next.
-    usleep(100 * 1000);
-  }
+  // draw progress bar
+  rgb_matrix::DrawLine(offscreen, 3, 12, 3 + progress_width, 12, progress_color);
 }
 
-static void DrawOther(rgb_matrix::RGBMatrix *matrix, rgb_matrix::FrameCanvas *offscreen)
+static void DrawWeatherScreen(rgb_matrix::RGBMatrix *matrix, rgb_matrix::FrameCanvas *offscreen)
 {
-  rgb_matrix::Color text_color(0, 255, 179); // Turqoise
-  int letter_spacing = 0;
+  // draw border for weather widget
+  DrawBorder(offscreen, border_color2, 62, 15, 1, 16);
 
-  rgb_matrix::Font font;
-  if (!font.LoadFont("libs/rpi-rgb-led-matrix/fonts/7x13.bdf"))
-  {
-    std::cerr << "Couldn't load font" << std::endl;
-    return;
-  }
-
-  char text_buffer[64] = "Hei!";
-  matrix->Clear();
-
-  while (!interrupt_received)
-  {
-    if (next_received) {
-      SetNext();
-      return;
-    }
-    offscreen->Clear();
-    rgb_matrix::DrawText(offscreen, font,
-                         TEXT_X, TEXT_Y + font.baseline(),
-                         text_color, NULL, text_buffer,
-                         letter_spacing);
-
-    offscreen = matrix->SwapOnVSync(offscreen);
-    usleep(100 * 1000);
-  }
+  offscreen = matrix->SwapOnVSync(offscreen);
 }
 
 int main(int argc, char *argv[])
 {
+  std::cout << "----------" << std::endl;
+  std::cout << "Starting awesome clock program!" << std::endl;
+  std::cout << "----------" << std::endl;
+
   rgb_matrix::RGBMatrix::Options defaults;
   defaults.hardware_mapping = "regular"; // or e.g. "adafruit-hat"
   defaults.rows = 32;
@@ -147,28 +91,25 @@ int main(int argc, char *argv[])
     return 1;
   }
 
-  signal(SIGTERM, QuitHandler);
-  signal(SIGQUIT, QuitHandler);  // Ctrl+D
-  signal(SIGINT, NextHandler);   // Ctrl+C
-
-
-  while(true) {
-    switch (currentScene)
-    {
-    case Clock:
-      DrawClock(matrix, offscreen);
-      break;
-    case Other:
-      DrawOther(matrix, offscreen);
-      break;
-    default:
-      break;
-    }
+  rgb_matrix::Font font;
+  // if (!font.LoadFont("libs/rpi-rgb-led-matrix/fonts/7x13.bdf"))
+  if (!font.LoadFont("libs/rpi-rgb-led-matrix/fonts/6x10.bdf"))
+  {
+    std::cerr << "Couldn't load font" << std::endl;
+    return 1;
   }
 
-  DrawClock(matrix, offscreen);
+  struct DrawClockDependencies deps;
+  deps.text_buffer = (char*)malloc(64);
 
-  matrix->Clear();
+  while (true) {
+    DrawClockScreen(matrix, offscreen, deps, font);
+    DrawWeatherScreen(matrix, offscreen);
+
+    // usleep(100 * 1000);
+    usleep(100 * 1000);
+  }
+
   delete matrix;
 
   return 0;
