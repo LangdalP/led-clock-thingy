@@ -12,7 +12,11 @@ LDFLAGS+=-L$(RGB_LIBDIR) -l$(RGB_LIBRARY_NAME) -lrt -lm -lpthread
 clockthingy: clockthingy.o $(RGB_LIBRARY)
 	$(CC) $(CFLAGS) clockthingy.o -o clockthingy $(LDFLAGS)
 
+<<<<<<< HEAD
 clockthingy.o: main.cxx gfxutils.cxx
+=======
+clockthingy.o: main.cxx clock.cxx gfxutils.cxx
+>>>>>>> 7cfc644196f33878c29ab450a34b653e02fb64b0
 	$(CC) $(CFLAGS) -c main.cxx -o clockthingy.o
 
  $(RGB_LIBRARY):
